@@ -1,18 +1,13 @@
 // importo dotenv per leggere le variabili dal file .env
 require("dotenv").config();
 
-// importo il pool di connessione al database
-const db = require("./src/config/db");
+// importo l'app Express configurata in app.js
+const app = require("./src/app");
 
-// testo la connessione al database
-async function testConnection() {
-  try {
-    // eseguo una query semplice per verificare che la connessione funzioni
-    const [rows] = await db.query("SELECT 1");
-    console.log("connessione al database riuscita");
-  } catch (error) {
-    console.error("errore di connessione al database:", error.message);
-  }
-}
+// leggo la porta dal file .env
+const PORT = process.env.PORT || 3000;
 
-testConnection();
+// avvio il server sulla porta definita
+app.listen(PORT, () => {
+  console.log(`server avviato sulla porta ${PORT}`);
+});
