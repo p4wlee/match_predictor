@@ -45,3 +45,58 @@ exports.register = async (req, res) => {
     return res.status(500).json({ message: `internal server error` });
   }
 };
+
+// autentico un utente e genero i token
+exports.login = async (req, res) => {
+  try {
+    // leggo email e password dal body della richiesta
+    const { email, password } = req.body;
+
+    // verifico che tutti i campi siano presenti
+    if (!email || !password)
+      return res.status(400).json({
+        message: "missing data",
+      });
+
+    // cerco l'utente nel database tramite email
+    // findByEmail restituisce undefined se l'utente non esiste
+    const user = await userModel.findByEmail(email);
+
+    // se l'utente non esiste rispondo con 404
+    if (!user) return res.status(404).json({ message: "user not found" });
+
+    // confronto la password in chiaro con quella hashata nel database
+    // bcrypt.compare restituisce true se corrispondono, false altrimenti
+    // non posso confrontare direttamente le stringhe perché la password nel db è hashata
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    // se la password non è valida rispondo con 401
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        message: "unauthorized access",
+      });
+    }
+
+    // genero l'access token con id e ruolo dell'utente
+    // questo token ha scadenza breve (1h) ed è usato per autenticare le richieste
+    const accessToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
+
+    // genero il refresh token con solo l'id dell'utente
+    // questo token ha scadenza lunga (7d) ed è usato solo per ottenere un nuovo access token
+    const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN });
+
+    // calcolo la data di scadenza del refresh token
+    // Date.now() restituisce i millisecondi attuali, aggiungo 7 giorni in millisecondi
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    // salvo il refresh token e la sua scadenza nel database
+    // questo mi permette di invalidarlo al logout e verificarlo al refresh
+    await userModel.updateRefreshToken(refreshToken, expiresAt, user.id);
+
+    // rispondo con i due token
+    return res.status(200).json({ accessToken, refreshToken });
+  } catch (error) {
+    // gestisco qualsiasi errore imprevisto del server
+    return res.status(500).json({ message: "internal server error" });
+  }
+};
