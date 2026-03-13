@@ -146,3 +146,25 @@ exports.refresh = async (req, res) => {
     });
   }
 };
+
+// eseguo il logout dell'utente autenticato azzerando il refresh token nel database
+exports.logout = async (req, res) => {
+  try {
+    // leggo l'id dell'utente da req.user, popolato dal middleware auth.js
+    const userId = req.user.id;
+
+    // azzero il refresh token e la sua scadenza nel database
+    // questo invalida il token e impedisce di usarlo per generare nuovi access token
+    await userModel.clearRefreshToken(userId);
+
+    // rispondo con 200 e un messaggio di successo
+    return res.status(200).json({
+      message: `logout successful`,
+    });
+  } catch (error) {
+    // gestisco qualsiasi errore imprevisto del server
+    return res.status(500).json({
+      message: `internal server error`,
+    });
+  }
+};
