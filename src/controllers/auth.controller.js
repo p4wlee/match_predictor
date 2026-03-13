@@ -55,7 +55,7 @@ exports.login = async (req, res) => {
     // verifico che tutti i campi siano presenti
     if (!email || !password)
       return res.status(400).json({
-        message: "missing data",
+        message: `missing data`,
       });
 
     // cerco l'utente nel database tramite email
@@ -63,7 +63,7 @@ exports.login = async (req, res) => {
     const user = await userModel.findByEmail(email);
 
     // se l'utente non esiste rispondo con 404
-    if (!user) return res.status(404).json({ message: "user not found" });
+    if (!user) return res.status(404).json({ message: `user not found` });
 
     // confronto la password in chiaro con quella hashata nel database
     // bcrypt.compare restituisce true se corrispondono, false altrimenti
@@ -73,7 +73,7 @@ exports.login = async (req, res) => {
     // se la password non è valida rispondo con 401
     if (!isPasswordValid) {
       return res.status(401).json({
-        message: "unauthorized access",
+        message: `unauthorized access`,
       });
     }
 
@@ -97,6 +97,52 @@ exports.login = async (req, res) => {
     return res.status(200).json({ accessToken, refreshToken });
   } catch (error) {
     // gestisco qualsiasi errore imprevisto del server
-    return res.status(500).json({ message: "internal server error" });
+    return res.status(500).json({ message: `internal server error` });
+  }
+};
+
+// genero un nuovo access token usando il refresh token
+exports.refresh = async (req, res) => {
+  try {
+    // leggo il refresh token dal body della richiesta
+    const { refreshToken } = req.body;
+
+    // verifico che il refresh token sia presente nel body
+    if (!refreshToken) {
+      return res.status(400).json({
+        message: `token not present`,
+      });
+    }
+
+    // cerco l'utente nel database tramite il refresh token
+    // findByRefreshToken restituisce undefined se il token non esiste nel db
+    const user = await userModel.findByRefreshToken(refreshToken);
+
+    // se nessun utente ha quel refresh token, il token non è valido
+    if (!user) {
+      return res.status(401).json({
+        message: `user not found`,
+      });
+    }
+
+    // verifico che il refresh token non sia scaduto
+    // confronto la data di scadenza salvata nel db con la data attuale
+    if (new Date(user.refresh_token_expires_at) < new Date()) {
+      return res.status(401).json({
+        message: `refresh token expired`,
+      });
+    }
+
+    // genero un nuovo access token con id e ruolo dell'utente
+    // uso il JWT_SECRET e la scadenza breve (1h) definiti nel .env
+    const accessToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
+
+    // rispondo con il nuovo access token
+    return res.status(200).json({ accessToken });
+  } catch (error) {
+    // gestisco qualsiasi errore imprevisto del server
+    return res.status(500).json({
+      message: `internal server error`,
+    });
   }
 };
