@@ -7,7 +7,6 @@ const leaderboardModel = require("../models/leaderboard.model");
 exports.getLeaderboard = async (req, res) => {
   try {
     // leggo i parametri opzionali dalla query string
-    // es. /leaderboard?week=3&sort=asc
     const { week, sort } = req.query;
 
     // recupero la classifica dal database passando i filtri opzionali
