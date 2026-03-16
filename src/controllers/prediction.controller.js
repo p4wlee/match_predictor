@@ -62,3 +62,55 @@ exports.createPrediction = async (req, res) => {
     });
   }
 };
+
+// restituisco i pronostici dell'utente autenticato
+exports.getMyPredictions = async (req, res) => {
+  try {
+    // leggo l'id dell'utente autenticato da req.user, popolato dal middleware auth.js
+    const userId = req.user.id;
+
+    // recupero tutti i pronostici dell'utente dal database
+    const predictions = await predictionModel.getUserPredictions(userId);
+
+    // se non ci sono pronostici rispondo con 404
+    if (predictions.length === 0) {
+      return res.status(404).json({
+        message: `no predictions found`,
+      });
+    }
+
+    // rispondo con 200 e la lista dei pronostici
+    return res.status(200).json({ predictions });
+  } catch (error) {
+    // gestisco qualsiasi errore imprevisto del server
+    return res.status(500).json({
+      message: `internal server error`,
+    });
+  }
+};
+
+// restituisco i pronostici di un utente specifico tramite id
+exports.getUserPredictions = async (req, res) => {
+  try {
+    // leggo l'id dell'utente dall'url (es. /users/5/predictions)
+    const userId = req.params.id;
+
+    // recupero tutti i pronostici dell'utente dal database
+    const predictions = await predictionModel.getUserPredictions(userId);
+
+    // se non ci sono pronostici rispondo con 404
+    if (predictions.length === 0) {
+      return res.status(404).json({
+        message: `no predictions found`,
+      });
+    }
+
+    // rispondo con 200 e la lista dei pronostici
+    return res.status(200).json({ predictions });
+  } catch (error) {
+    // gestisco qualsiasi errore imprevisto del server
+    return res.status(500).json({
+      message: `internal server error`,
+    });
+  }
+};
