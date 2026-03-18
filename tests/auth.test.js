@@ -18,7 +18,9 @@ describe("auth controller - register", () => {
   // test con body vuoto quindi il controller deve rispondere con 400
   it("should return 400 if data is missing", async () => {
     // simulo una richiesta con body vuoto
-    const req = { body: {} };
+    const req = {
+      body: {},
+    };
 
     // simulo la risposta
     const res = {
@@ -127,5 +129,123 @@ describe("auth controller - register", () => {
     expect(res.status.calledWith(201)).to.be.true;
     // verifico che json sia stato chiamato con il messaggio corretto
     expect(res.json.calledWith({ message: `user registered successfully` })).to.be.true;
+  });
+});
+
+describe("auth controller - login", () => {
+  // dopo ogni test ripristino tutti gli stub per non influenzare i test successivi
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  // test con body vuoto quindi il controller deve rispondere con 400
+  it("should return 400 if data is missing", async () => {
+    // simulo una richiesta con body vuoto
+    const req = { body: {} };
+
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // chiamo il controller
+    await authController.login(req, res);
+
+    // verifico che status sia stato chiamato con 400
+    expect(res.status.calledWith(400)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `missing data` })).to.be.true;
+  });
+
+  // test con utente non esistente quindi il controller deve rispondere con 404
+  it("should return 404 if user don't exist", async () => {
+    // simulo una richiesta con email e password nel body
+    const req = {
+      body: {
+        email: "email.prova@test.it",
+        password: "password1",
+      },
+    };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo findByEmail per simulare un utente non esistente nel db
+    sinon.stub(userModel, "findByEmail").resolves(null);
+
+    // chiamo il controller
+    await authController.login(req, res);
+
+    // verifico che status sia stato chiamato con 404
+    expect(res.status.calledWith(404)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `user not found` })).to.be.true;
+  });
+
+  // test con password errata quindi il controller deve rispondere con 401
+  it("should return 401 if the password is incorrect", async () => {
+    // simulo una richiesta con email e password errata nel body
+    const req = {
+      body: {
+        email: "email.prova@test.it",
+        password: "password1",
+      },
+    };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo findByEmail per simulare un utente esistente nel db
+    sinon.stub(userModel, "findByEmail").resolves({ email: "email.prova@test.it", password: "password12" });
+    // stubbo bcrypt.compare per simulare una password errata (restituisce false)
+    sinon.stub(bcrypt, "compare").resolves(false);
+
+    // chiamo il controller
+    await authController.login(req, res);
+
+    // verifico che status sia stato chiamato con 401
+    expect(res.status.calledWith(401)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `unauthorized access` })).to.be.true;
+  });
+
+  // test con dati corretti quindi il controller deve rispondere con 200 e i due token
+  it("should return 200 if login was successful", async () => {
+    // simulo una richiesta con email e password corrette nel body
+    const req = {
+      body: {
+        email: "email.prova@test.it",
+        password: "password1",
+      },
+    };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo findByEmail per simulare un utente esistente nel db
+    sinon.stub(userModel, "findByEmail").resolves({ id: 1, email: "email.prova@test.it", password: "hashedPassword", role: "user" });
+    // stubbo bcrypt.compare per simulare una password corretta (restituisce true)
+    sinon.stub(bcrypt, "compare").resolves(true);
+    // stubbo updateRefreshToken per simulare il salvataggio del refresh token nel db
+    sinon.stub(userModel, "updateRefreshToken").resolves();
+
+    // chiamo il controller
+    await authController.login(req, res);
+
+    // verifico che status sia stato chiamato con 200
+    expect(res.status.calledWith(200)).to.be.true;
+    // verifico che json sia stato chiamato una volta
+    expect(res.json.calledOnce).to.be.true;
+    // verifico che la risposta contenga accessToken e refreshToken
+    const response = res.json.firstCall.args[0];
+    expect(response).to.have.property(`accessToken`);
+    expect(response).to.have.property(`refreshToken`);
   });
 });
