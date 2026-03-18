@@ -247,3 +247,132 @@ describe("auth controller - login", () => {
     expect(response).to.have.property(`refreshToken`);
   });
 });
+
+describe("auth controller - refresh", () => {
+  // dopo ogni test ripristino tutti gli stub per non influenzare i test successivi
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  // test con token mancante quindi il controller deve rispondere con 400
+  it("should return 400 if token is missing", async () => {
+    // simulo una richiesta con body vuoto
+    const req = { body: {} };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // chiamo il controller
+    await authController.refresh(req, res);
+
+    // verifico che status sia stato chiamato con 400
+    expect(res.status.calledWith(400)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `token not present` })).to.be.true;
+  });
+
+  // test con token non valido quindi il controller deve rispondere con 401
+  it("should return 401 if token is not valid", async () => {
+    // simulo una richiesta con refresh token non valido nel body
+    const req = { body: { refreshToken: "invalidtoken" } };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo findByRefreshToken per simulare un token non trovato nel db
+    sinon.stub(userModel, "findByRefreshToken").resolves(null);
+
+    // chiamo il controller
+    await authController.refresh(req, res);
+
+    // verifico che status sia stato chiamato con 401
+    expect(res.status.calledWith(401)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `user not found` })).to.be.true;
+  });
+
+  // test con token scaduto quindi il controller deve rispondere con 401
+  it("should return 401 if token has expired", async () => {
+    // simulo una richiesta con refresh token nel body
+    const req = { body: { refreshToken: "expiredtoken" } };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo findByRefreshToken per simulare un utente con token scaduto nel db
+    sinon.stub(userModel, "findByRefreshToken").resolves({
+      id: 1,
+      refresh_token_expires_at: "2025-02-03T10:15:22.000Z",
+    });
+
+    // chiamo il controller
+    await authController.refresh(req, res);
+
+    // verifico che status sia stato chiamato con 401
+    expect(res.status.calledWith(401)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `refresh token expired` })).to.be.true;
+  });
+
+  // test con refresh token valido quindi il controller deve rispondere con 200 e un nuovo access token
+  it("should return 200 if refresh was successful", async () => {
+    // simulo una richiesta con refresh token valido nel body
+    const req = { body: { refreshToken: "validtoken" } };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo findByRefreshToken per simulare un utente con token valido e non scaduto nel db
+    sinon.stub(userModel, "findByRefreshToken").resolves({
+      id: 1,
+      role: "user",
+      refresh_token_expires_at: "2099-01-01T00:00:00.000Z",
+    });
+
+    // chiamo il controller
+    await authController.refresh(req, res);
+
+    // verifico che status sia stato chiamato con 200
+    expect(res.status.calledWith(200)).to.be.true;
+    // verifico che la risposta contenga il nuovo access token
+    const response = res.json.firstCall.args[0];
+    expect(response).to.have.property(`accessToken`);
+  });
+});
+
+describe("auth controller - logout", () => {
+  // dopo ogni test ripristino tutti gli stub per non influenzare i test successivi
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  // test con dati corretti quindi il controller deve rispondere con 200
+  it("should return 200 if logout was successful", async () => {
+    // simulo una richiesta con id utente autenticato in req.user
+    const req = { user: { id: 1 } };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo clearRefreshToken per simulare l'azzeramento del token nel db
+    sinon.stub(userModel, "clearRefreshToken").resolves();
+
+    // chiamo il controller
+    await authController.logout(req, res);
+
+    // verifico che status sia stato chiamato con 200
+    expect(res.status.calledWith(200)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `logout successful` })).to.be.true;
+  });
+});
