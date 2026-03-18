@@ -4,7 +4,8 @@
   "description": "REST API per un sistema di pronostici calcistici, sviluppata con Node.js, Express e MySQL",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "test": "mocha tests/**/*.test.js --timeout 5000"
   },
   "repository": {
     "type": "git",
