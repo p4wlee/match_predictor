@@ -18,9 +18,7 @@ describe("auth controller - register", () => {
   // test con body vuoto quindi il controller deve rispondere con 400
   it("should return 400 if data is missing", async () => {
     // simulo una richiesta con body vuoto
-    const req = {
-      body: {},
-    };
+    const req = { body: {} };
 
     // simulo la risposta
     const res = {
@@ -39,12 +37,12 @@ describe("auth controller - register", () => {
 
   // test con username già esistente quindi il controller deve rispondere con 409
   it("should return 409 if username already exists", async () => {
-    // simulo una richiesta con body vuoto
+    // simulo una richiesta con username già esistente nel body
     const req = {
       body: {
-        username: "user1",
-        email: "email.prova@test.it",
-        password: "password1",
+        username: "testuser",
+        email: "test@test.com",
+        password: "testpassword",
         role: "user",
       },
     };
@@ -55,7 +53,7 @@ describe("auth controller - register", () => {
     };
 
     // stubbo findByUsername per simulare un username già esistente nel db
-    sinon.stub(userModel, "findByUsername").resolves({ id: 1, username: "user1" });
+    sinon.stub(userModel, "findByUsername").resolves({ id: 1, username: "testuser" });
 
     // chiamo il controller
     await authController.register(req, res);
@@ -68,12 +66,12 @@ describe("auth controller - register", () => {
 
   // test con email già esistente quindi il controller deve rispondere con 409
   it("should return 409 if email already exists", async () => {
-    // simulo una richiesta con body vuoto
+    // simulo una richiesta con email già esistente nel body
     const req = {
       body: {
-        username: "user1",
-        email: "email.prova@test.it",
-        password: "password1",
+        username: "testuser",
+        email: "test@test.com",
+        password: "testpassword",
         role: "user",
       },
     };
@@ -86,7 +84,7 @@ describe("auth controller - register", () => {
     // stubbo findByUsername per simulare username non esistente
     sinon.stub(userModel, "findByUsername").resolves(null);
     // stubbo findByEmail per simulare un'email già esistente nel db
-    sinon.stub(userModel, "findByEmail").resolves({ id: 1, email: "email.prova@test.it" });
+    sinon.stub(userModel, "findByEmail").resolves({ id: 1, email: "test@test.com" });
 
     // chiamo il controller
     await authController.register(req, res);
@@ -99,12 +97,12 @@ describe("auth controller - register", () => {
 
   // test con tutti i dati corretti quindi il controller deve rispondere con 201
   it("should return 201 if registration was successful", async () => {
-    // simulo una richiesta con body vuoto
+    // simulo una richiesta con tutti i dati corretti nel body
     const req = {
       body: {
-        username: "user1",
-        email: "email.prova@test.it",
-        password: "password1",
+        username: "testuser",
+        email: "test@test.com",
+        password: "testpassword",
         role: "user",
       },
     };
@@ -120,7 +118,7 @@ describe("auth controller - register", () => {
     // stubbo createUser per simulare la creazione dell'utente nel db
     sinon.stub(userModel, "createUser").resolves(1);
     // stubbo bcrypt.hash per evitare che esegua l'hash reale durante il test
-    sinon.stub(bcrypt, "hash").resolves(`hashedPassword123`);
+    sinon.stub(bcrypt, "hash").resolves(`hashedpassword`);
 
     // chiamo il controller
     await authController.register(req, res);
@@ -163,8 +161,8 @@ describe("auth controller - login", () => {
     // simulo una richiesta con email e password nel body
     const req = {
       body: {
-        email: "email.prova@test.it",
-        password: "password1",
+        email: "test@test.com",
+        password: "testpassword",
       },
     };
     // simulo la risposta
@@ -190,8 +188,8 @@ describe("auth controller - login", () => {
     // simulo una richiesta con email e password errata nel body
     const req = {
       body: {
-        email: "email.prova@test.it",
-        password: "password1",
+        email: "test@test.com",
+        password: "wrongpassword",
       },
     };
     // simulo la risposta
@@ -201,7 +199,7 @@ describe("auth controller - login", () => {
     };
 
     // stubbo findByEmail per simulare un utente esistente nel db
-    sinon.stub(userModel, "findByEmail").resolves({ email: "email.prova@test.it", password: "password12" });
+    sinon.stub(userModel, "findByEmail").resolves({ email: "test@test.com", password: "hashedpassword" });
     // stubbo bcrypt.compare per simulare una password errata (restituisce false)
     sinon.stub(bcrypt, "compare").resolves(false);
 
@@ -219,8 +217,8 @@ describe("auth controller - login", () => {
     // simulo una richiesta con email e password corrette nel body
     const req = {
       body: {
-        email: "email.prova@test.it",
-        password: "password1",
+        email: "test@test.com",
+        password: "testpassword",
       },
     };
     // simulo la risposta
@@ -230,7 +228,7 @@ describe("auth controller - login", () => {
     };
 
     // stubbo findByEmail per simulare un utente esistente nel db
-    sinon.stub(userModel, "findByEmail").resolves({ id: 1, email: "email.prova@test.it", password: "hashedPassword", role: "user" });
+    sinon.stub(userModel, "findByEmail").resolves({ id: 1, email: "test@test.com", password: "hashedpassword", role: "user" });
     // stubbo bcrypt.compare per simulare una password corretta (restituisce true)
     sinon.stub(bcrypt, "compare").resolves(true);
     // stubbo updateRefreshToken per simulare il salvataggio del refresh token nel db
