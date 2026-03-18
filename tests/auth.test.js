@@ -19,7 +19,6 @@ describe("auth controller - register", () => {
   it("should return 400 if data is missing", async () => {
     // simulo una richiesta con body vuoto
     const req = { body: {} };
-
     // simulo la risposta
     const res = {
       status: sinon.stub().returnsThis(),
@@ -128,6 +127,35 @@ describe("auth controller - register", () => {
     // verifico che json sia stato chiamato con il messaggio corretto
     expect(res.json.calledWith({ message: `user registered successfully` })).to.be.true;
   });
+
+  // test con errore del database quindi il controller deve rispondere con 500
+  it("should return 500 if database throws an error", async () => {
+    // simulo una richiesta con tutti i dati corretti nel body
+    const req = {
+      body: {
+        username: "testuser",
+        email: "test@test.com",
+        password: "testpassword",
+        role: "user",
+      },
+    };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo findByUsername per simulare un errore del database
+    sinon.stub(userModel, "findByUsername").rejects(new Error(`database error`));
+
+    // chiamo il controller
+    await authController.register(req, res);
+
+    // verifico che status sia stato chiamato con 500
+    expect(res.status.calledWith(500)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `internal server error` })).to.be.true;
+  });
 });
 
 describe("auth controller - login", () => {
@@ -140,7 +168,6 @@ describe("auth controller - login", () => {
   it("should return 400 if data is missing", async () => {
     // simulo una richiesta con body vuoto
     const req = { body: {} };
-
     // simulo la risposta
     const res = {
       status: sinon.stub().returnsThis(),
@@ -246,6 +273,33 @@ describe("auth controller - login", () => {
     expect(response).to.have.property(`accessToken`);
     expect(response).to.have.property(`refreshToken`);
   });
+
+  // test con errore del database quindi il controller deve rispondere con 500
+  it("should return 500 if database throws an error", async () => {
+    // simulo una richiesta con email e password nel body
+    const req = {
+      body: {
+        email: "test@test.com",
+        password: "testpassword",
+      },
+    };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo findByEmail per simulare un errore del database
+    sinon.stub(userModel, "findByEmail").rejects(new Error(`database error`));
+
+    // chiamo il controller
+    await authController.login(req, res);
+
+    // verifico che status sia stato chiamato con 500
+    expect(res.status.calledWith(500)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `internal server error` })).to.be.true;
+  });
 });
 
 describe("auth controller - refresh", () => {
@@ -297,7 +351,7 @@ describe("auth controller - refresh", () => {
 
   // test con token scaduto quindi il controller deve rispondere con 401
   it("should return 401 if token has expired", async () => {
-    // simulo una richiesta con refresh token nel body
+    // simulo una richiesta con refresh token scaduto nel body
     const req = { body: { refreshToken: "expiredtoken" } };
     // simulo la risposta
     const res = {
@@ -346,6 +400,28 @@ describe("auth controller - refresh", () => {
     const response = res.json.firstCall.args[0];
     expect(response).to.have.property(`accessToken`);
   });
+
+  // test con errore del database quindi il controller deve rispondere con 500
+  it("should return 500 if database throws an error", async () => {
+    // simulo una richiesta con refresh token nel body
+    const req = { body: { refreshToken: "validtoken" } };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo findByRefreshToken per simulare un errore del database
+    sinon.stub(userModel, "findByRefreshToken").rejects(new Error(`database error`));
+
+    // chiamo il controller
+    await authController.refresh(req, res);
+
+    // verifico che status sia stato chiamato con 500
+    expect(res.status.calledWith(500)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `internal server error` })).to.be.true;
+  });
 });
 
 describe("auth controller - logout", () => {
@@ -374,5 +450,27 @@ describe("auth controller - logout", () => {
     expect(res.status.calledWith(200)).to.be.true;
     // verifico che json sia stato chiamato con il messaggio corretto
     expect(res.json.calledWith({ message: `logout successful` })).to.be.true;
+  });
+
+  // test con errore del database quindi il controller deve rispondere con 500
+  it("should return 500 if database throws an error", async () => {
+    // simulo una richiesta con id utente autenticato in req.user
+    const req = { user: { id: 1 } };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo clearRefreshToken per simulare un errore del database
+    sinon.stub(userModel, "clearRefreshToken").rejects(new Error(`database error`));
+
+    // chiamo il controller
+    await authController.logout(req, res);
+
+    // verifico che status sia stato chiamato con 500
+    expect(res.status.calledWith(500)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `internal server error` })).to.be.true;
   });
 });
