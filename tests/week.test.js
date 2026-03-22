@@ -1,0 +1,140 @@
+// importo chai per le asserzioni
+const { expect } = require("chai");
+// importo sinon per gli stub
+const sinon = require("sinon");
+// importo il controller da testare
+const weekController = require("../src/controllers/week.controller");
+// importo il model per poterlo stubbarre
+const weekModel = require("../src/models/week.model");
+
+describe("week controller - createWeek", () => {
+  // dopo ogni test ripristino tutti gli stub per non influenzare i test successivi
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  // test con body vuoto quindi il controller deve rispondere con 400
+  it("should return 400 if data is missing", async () => {
+    // simulo una richiesta con body vuoto
+    const req = { body: {} };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // chiamo il controller
+    await weekController.createWeek(req, res);
+
+    // verifico che status sia stato chiamato con 400
+    expect(res.status.calledWith(400)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `missing field` })).to.be.true;
+  });
+
+  // test con dati corretti quindi il controller deve rispondere con 201
+  it("should return 201 if week is created successfully", async () => {
+    // simulo una richiesta con nome squadra nel body
+    const req = {
+      body: {
+        weekNumber: 1,
+      },
+    };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo createWeek per simulare la creazione della settimana nel db
+    sinon.stub(weekModel, "createWeek").resolves(1);
+
+    // chiamo il controller
+    await weekController.createWeek(req, res);
+
+    // verifico che status sia stato chiamato con 201
+    expect(res.status.calledWith(201)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `week registered successfully` })).to.be.true;
+  });
+
+  // test con errore del database quindi il controller deve rispondere con 500
+  it("should return 500 if database throws an error", async () => {
+    // simulo una richiesta con nome squadra nel body
+    const req = {
+      body: {
+        weekNumber: 1,
+      },
+    };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo createWeek per simulare un errore del database
+    sinon.stub(weekModel, "createWeek").rejects(new Error(`database error`));
+
+    // chiamo il controller
+    await weekController.createWeek(req, res);
+
+    // verifico che status sia stato chiamato con 500
+    expect(res.status.calledWith(500)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `internal server error` })).to.be.true;
+  });
+});
+
+describe("week controller - getWeeks", () => {
+  // dopo ogni test ripristino tutti gli stub per non influenzare i test successivi
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  // test con lista settimane quindi il controller deve rispondere con 200
+  it("should return 200 if weeks are found", async () => {
+    // simulo una richiesta senza parametri
+    const req = {};
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo showTeams per simulare la lista delle settimane nel db
+    sinon.stub(weekModel, "showWeeks").resolves([{ weekNumber: 1 }]);
+
+    // chiamo il controller
+    await weekController.getWeeks(req, res);
+
+    // verifico che status sia stato chiamato con 200
+    expect(res.status.calledWith(200)).to.be.true;
+    // verifico che json sia stato chiamato una volta
+    expect(res.json.calledOnce).to.be.true;
+    // verifico che la risposta contenga weeks
+    const response = res.json.firstCall.args[0];
+    expect(response).to.have.property(`weeks`);
+  });
+
+  // test con errore del database quindi il controller deve rispondere con 500
+  it("should return 500 if database throws an error", async () => {
+    // simulo una richiesta senza parametri
+    const req = {};
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo showWeeks per simulare un errore del database
+    sinon.stub(weekModel, "showWeeks").rejects(new Error(`database error`));
+
+    // chiamo il controller
+    await weekController.getWeeks(req, res);
+
+    // verifico che status sia stato chiamato con 500
+    expect(res.status.calledWith(500)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `internal server error` })).to.be.true;
+  });
+});
