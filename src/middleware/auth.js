@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
   // se l'header non esiste o non inizia con "Bearer" rispondo con 401
   if (!authHeader || !authHeader.startsWith("Bearer")) {
     return res.status(401).json({
-      error: "missing or malformed token",
+      message: `missing or malformed token`,
     });
   }
 
@@ -35,7 +35,7 @@ module.exports = (req, res, next) => {
   } catch (error) {
     // se jwt.verify lancia un errore il token non è valido o è scaduto
     return res.status(401).json({
-      error: "invalid or expired token",
+      message: `invalid or expired token`,
     });
   }
 };
