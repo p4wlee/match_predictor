@@ -147,3 +147,79 @@ describe("match controller - createMatch", () => {
     expect(res.json.calledWith({ message: `internal server error` })).to.be.true;
   });
 });
+
+describe("prediction controller - getMyPredictions", () => {
+  // dopo ogni test ripristino tutti gli stub per non influenzare i test successivi
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  // test con nessun pronostico trovato quindi il controller deve rispondere con 404
+  it("should return 404 if prediction not exists", async () => {
+    // simulo una richiesta con id utente autenticato
+    const req = { user: { id: 1 } };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo getUserPredictions per simulare nessun pronostico nel db
+    sinon.stub(predictionModel, "getUserPredictions").resolves([]);
+
+    // chiamo il controller
+    await predictionController.getMyPredictions(req, res);
+
+    // verifico che status sia stato chiamato con 404
+    expect(res.status.calledWith(404)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `no predictions found` })).to.be.true;
+  });
+
+  // test con pronostici esistenti quindi il controller deve rispondere con 200
+  it("should return 200 if prediction exists", async () => {
+    // simulo una richiesta con id utente autenticato
+    const req = { user: { id: 1 } };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo getUserPredictions per simulare pronostici esistenti nel db
+    sinon.stub(predictionModel, "getUserPredictions").resolves([{ id: 1, prediction: `1` }]);
+
+    // chiamo il controller
+    await predictionController.getMyPredictions(req, res);
+
+    // verifico che status sia stato chiamato con 200
+    expect(res.status.calledWith(200)).to.be.true;
+    // verifico che json sia stato chiamato una volta
+    expect(res.json.calledOnce).to.be.true;
+    // verifico che la risposta contenga predictions
+    const response = res.json.firstCall.args[0];
+    expect(response).to.have.property(`predictions`);
+  });
+
+  // test con errore del database quindi il controller deve rispondere con 500
+  it("should return 500 if database throws an error", async () => {
+    // simulo una richiesta con id utente autenticato
+    const req = { user: { id: 1 } };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+
+    // stubbo getUserPredictions per simulare un errore del database
+    sinon.stub(predictionModel, "getUserPredictions").rejects(new Error(`database error`));
+
+    // chiamo il controller
+    await predictionController.getMyPredictions(req, res);
+
+    // verifico che status sia stato chiamato con 500
+    expect(res.status.calledWith(500)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `internal server error` })).to.be.true;
+  });
+});
