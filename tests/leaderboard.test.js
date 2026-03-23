@@ -7,7 +7,7 @@ const leaderboardController = require("../src/controllers/leaderboard.controller
 // importo il model per poterlo stubbarre
 const leaderboardModel = require("../src/models/leaderboard.model");
 
-describe("prediction controller - getUserPredictions", () => {
+describe("leaderboard controller - getLeaderboard", () => {
   // dopo ogni test ripristino tutti gli stub per non influenzare i test successivi
   afterEach(() => {
     sinon.restore();
