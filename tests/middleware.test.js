@@ -105,7 +105,48 @@ describe("middleware - auth", () => {
 });
 
 describe("middleware - isAdmin", () => {
+  // dopo ogni test ripristino tutti gli stub per non influenzare i test successivi
   afterEach(() => {
     sinon.restore();
+  });
+
+  // test con ruolo non admin quindi il middleware deve rispondere con 403
+  it("should return 403 if role is user", async () => {
+    // simulo una richiesta con ruolo utente non admin
+    const req = { user: { role: `user` } };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+    // creo lo stub di next()
+    const next = sinon.stub();
+
+    // chiamo il middleware
+    await isAdminMiddleware(req, res, next);
+
+    // verifico che status sia stato chiamato con 403
+    expect(res.status.calledWith(403)).to.be.true;
+    // verifico che json sia stato chiamato con il messaggio corretto
+    expect(res.json.calledWith({ message: `forbidden: admin role required` })).to.be.true;
+  });
+
+  // test con ruolo admin quindi il middleware deve chiamare next()
+  it("should call next if role is admin", async () => {
+    // simulo una richiesta con ruolo admin
+    const req = { user: { role: `admin` } };
+    // simulo la risposta
+    const res = {
+      status: sinon.stub().returnsThis(),
+      json: sinon.stub(),
+    };
+    // creo lo stub di next()
+    const next = sinon.stub();
+
+    // chiamo il middleware
+    await isAdminMiddleware(req, res, next);
+
+    // verifico che next sia stato chiamato una volta (ruolo admin)
+    expect(next.calledOnce).to.be.true;
   });
 });
