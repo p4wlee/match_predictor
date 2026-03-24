@@ -35,7 +35,7 @@ A RESTful API for a football match prediction system, built with **Node.js**, **
 ## 📁 Project Structure
 
 ```
-match-predictor-api/
+match_predictor/
 │
 ├── database/
 │   └── migrations.sql          # Database schema and seed data
