@@ -9,7 +9,7 @@ const predictionModel = require("../src/models/prediction.model");
 // importo il model per poterlo stubbarre nel createPrediction
 const matchModel = require("../src/models/match.model");
 
-describe("match controller - createMatch", () => {
+describe("prediction controller - createPrediction", () => {
   // dopo ogni test ripristino tutti gli stub per non influenzare i test successivi
   afterEach(() => {
     sinon.restore();
