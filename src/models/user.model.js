@@ -36,13 +36,13 @@ exports.createUser = async (username, email, password, role) => {
 // aggiorno il refresh token e la sua scadenza per un utente specifico
 exports.updateRefreshToken = async (refreshToken, expiresAt, userId) => {
   // uso il prepared statement con ? per prevenire sql injection
-  const [result] = await db.query(`UPDATE users SET refresh_token = ?, refresh_token_expires_at = ? WHERE id = ?`, [refreshToken, expiresAt, userId]);
+  await db.query(`UPDATE users SET refresh_token = ?, refresh_token_expires_at = ? WHERE id = ?`, [refreshToken, expiresAt, userId]);
 };
 
 // azzero il refresh token e la sua scadenza per un utente specifico (logout)
 exports.clearRefreshToken = async (userId) => {
   // imposto entrambi i campi a NULL per invalidare il refresh token
-  const [result] = await db.query(`UPDATE users SET refresh_token = NULL, refresh_token_expires_at = NULL WHERE id = ?`, [userId]);
+  await db.query(`UPDATE users SET refresh_token = NULL, refresh_token_expires_at = NULL WHERE id = ?`, [userId]);
 };
 
 // cerco un utente tramite il suo refresh token e restituisco il primo risultato
