@@ -101,7 +101,7 @@ describe("week controller - getWeeks", () => {
       json: sinon.stub(),
     };
 
-    // stubbo showTeams per simulare la lista delle settimane nel db
+    // stubbo showWeeks per simulare la lista delle settimane nel db
     sinon.stub(weekModel, "showWeeks").resolves([{ weekNumber: 1 }]);
 
     // chiamo il controller
