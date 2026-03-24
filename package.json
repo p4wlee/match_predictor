@@ -1,8 +1,8 @@
 {
   "name": "match_predictor",
   "version": "1.0.0",
-  "description": "REST API per un sistema di pronostici calcistici, sviluppata con Node.js, Express e MySQL",
-  "main": "index.js",
+  "description": "REST API for a football match prediction system, built with Node.js, Express and MySQL",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "test": "mocha tests/**/*.test.js --timeout 5000"
@@ -12,7 +12,7 @@
     "url": "git+https://github.com/p4wlee/match_predictor.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Davide Paulicelli",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
