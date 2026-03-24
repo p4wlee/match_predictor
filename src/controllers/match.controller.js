@@ -1,5 +1,3 @@
-// importo dotenv per leggere le variabili dal file .env
-require("dotenv").config();
 // importo matchModel per interagire con la tabella matches nel database
 const matchModel = require("../models/match.model");
 

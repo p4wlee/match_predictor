@@ -1,5 +1,3 @@
-// importo dotenv per leggere le variabili dal file .env
-require("dotenv").config();
 // importo teamModel per interagire con la tabella teams nel database
 const teamModel = require("../models/team.model");
 

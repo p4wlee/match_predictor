@@ -1,5 +1,3 @@
-// importo dotenv per leggere le variabili dal file .env
-require("dotenv").config();
 // importo leaderboardModel per interagire con la classifica nel database
 const leaderboardModel = require("../models/leaderboard.model");
 

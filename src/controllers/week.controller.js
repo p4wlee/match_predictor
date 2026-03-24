@@ -1,5 +1,3 @@
-// importo dotenv per leggere le variabili dal file .env
-require("dotenv").config();
 // importo weekModel per interagire con la tabella weeks nel database
 const weekModel = require("../models/week.model");
 

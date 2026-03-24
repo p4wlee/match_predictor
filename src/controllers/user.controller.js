@@ -1,5 +1,3 @@
-// importo dotenv per leggere le variabili dal file .env
-require("dotenv").config();
 // importo userModel per interagire con la tabella users nel database
 const userModel = require("../models/user.model");
 
