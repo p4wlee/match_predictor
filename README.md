@@ -40,6 +40,9 @@ match_predictor/
 ├── database/
 │   └── migrations.sql          # Database schema and seed data
 │
+├── docs/
+│   └── openapi.yaml            # OpenAPI API documentation
+│
 ├── src/
 │   ├── config/
 │   │   └── db.js               # MySQL connection pool
@@ -56,6 +59,16 @@ match_predictor/
 ├── package.json
 └── server.js                   # Entry point
 ```
+
+---
+
+## 📚 API Documentation
+
+The API is documented using OpenAPI 3.0.3.
+
+The OpenAPI specification is available in docs/openapi.yaml and describes the available endpoints, request parameters, request bodies, responses, authentication requirements, and HTTP status codes.
+
+The specification can be viewed using Swagger-compatible tools.
 
 ---
 
