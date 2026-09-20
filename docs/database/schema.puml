@@ -1,0 +1,72 @@
+@startuml match_predictor_schema
+
+title Match Predictor - Schema Database (MySQL 8.0)
+
+hide circle
+skinparam linetype ortho
+
+entity "users" as users {
+  * id : INT <<PK, auto_increment>>
+  --
+  * username : VARCHAR(50) <<unique>>
+  * email : VARCHAR(100) <<unique>>
+  * password : VARCHAR(255)
+  * role : ENUM('user','admin') = 'user'
+  refresh_token : VARCHAR(512)
+  refresh_token_expires_at : DATETIME
+  created_at : TIMESTAMP = CURRENT_TIMESTAMP
+}
+
+entity "teams" as teams {
+  * id : INT <<PK, auto_increment>>
+  --
+  * name : VARCHAR(100) <<unique>>
+}
+
+entity "weeks" as weeks {
+  * id : INT <<PK, auto_increment>>
+  --
+  * week_number : INT <<unique>>
+}
+
+entity "matches" as matches {
+  * id : INT <<PK, auto_increment>>
+  --
+  * week_id : INT <<FK>>
+  * home_team_id : INT <<FK>>
+  * away_team_id : INT <<FK>>
+  * result : ENUM('1','X','2')
+}
+
+entity "predictions" as predictions {
+  * id : INT <<PK, auto_increment>>
+  --
+  * user_id : INT <<FK>>
+  * match_id : INT <<FK>>
+  * prediction : ENUM('1','X','2')
+  * points_awarded : INT = 0
+  --
+  <<unique>> (user_id, match_id)
+}
+
+weeks ||--o{ matches : "week_id"
+teams ||--o{ matches : "home_team_id"
+teams ||--o{ matches : "away_team_id"
+users ||--o{ predictions : "user_id"
+matches ||--o{ predictions : "match_id"
+
+note bottom of predictions
+  Relazione N:M tra users e matches,
+  realizzata tramite questa tabella
+  di associazione con attributi
+  (prediction, points_awarded).
+end note
+
+note as N1
+  "leaderboard" NON è una tabella:
+  è una query aggregata (GROUP BY)
+  su predictions JOIN users/matches/weeks,
+  calcolata a runtime in leaderboard.model.js.
+end note
+
+@enduml
