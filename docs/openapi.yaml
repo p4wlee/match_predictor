@@ -7,11 +7,29 @@ info:
 
 servers:
   - url: http://localhost:3000
+tags:
+  - name: auth
+    description: Authentication endpoints
+  - name: users
+    description: User endpoints
+  - name: predictions
+    description: Prediction endpoints
+  - name: weeks
+    description: Championship week endpoints
+  - name: matches
+    description: Match endpoints
+  - name: teams
+    description: Team endpoints
+  - name: leaderboard
+    description: Leaderboard endpoints
 
 paths:
   /auth/register:
     post:
+      tags:
+        - auth
       summary: Register a new user
+      operationId: register
       description: Creates a new user account.
 
       requestBody:
@@ -86,7 +104,10 @@ paths:
 
   /auth/login:
     post:
+      tags:
+        - auth
       summary: User login
+      operationId: login
       description: Authenticates a user
 
       requestBody:
@@ -167,7 +188,10 @@ paths:
 
   /auth/refresh:
     post:
+      tags:
+        - auth
       summary: Refresh access token
+      operationId: refresh
       description: Refreshes the access token using a valid refresh token.
 
       requestBody:
@@ -238,7 +262,10 @@ paths:
 
   /auth/logout:
     post:
+      tags:
+        - auth
       summary: User logout
+      operationId: logout
       description: Logs out a user
 
       security:
@@ -289,7 +316,10 @@ paths:
 
   /users/me:
     get:
+      tags:
+        - users
       summary: Get authenticated user
+      operationId: getMe
       description: Returns the public data of the authenticated user.
 
       security:
@@ -371,7 +401,10 @@ paths:
 
   /users/{id}:
     get:
+      tags:
+        - users
       summary: Get user by ID
+      operationId: getUserById
       description: Returns the public data of a user identified by their ID.
 
       parameters:
@@ -439,7 +472,10 @@ paths:
 
   /weeks:
     post:
+      tags:
+        - weeks
       summary: Create a new week
+      operationId: createWeek
       description: Creates a new week. Requires an authenticated admin user.
 
       security:
@@ -524,7 +560,10 @@ paths:
                     example: internal server error
 
     get:
+      tags:
+        - weeks
       summary: Get all weeks
+      operationId: getWeeks
       description: Returns the list of all weeks.
 
       responses:
@@ -560,7 +599,10 @@ paths:
 
   /teams:
     post:
+      tags:
+        - teams
       summary: Create a new team
+      operationId: createTeam
       description: Creates a new team. Requires an authenticated admin user.
 
       security:
@@ -645,7 +687,10 @@ paths:
                     example: internal server error
 
     get:
+      tags:
+        - teams
       summary: Get all teams
+      operationId: getTeams
       description: Returns the list of all teams.
 
       responses:
@@ -681,7 +726,10 @@ paths:
 
   /matches:
     post:
+      tags:
+        - matches
       summary: Create a new match
+      operationId: createMatch
       description: Creates a new match. Requires an authenticated admin user.
 
       security:
@@ -791,7 +839,10 @@ paths:
                     example: internal server error
 
     get:
+      tags:
+        - matches
       summary: Get all matches
+      operationId: getAllMatches
       description: Returns the list of all matches, optionally filtered by week.
 
       parameters:
@@ -849,7 +900,10 @@ paths:
 
   /matches/{id}:
     get:
+      tags:
+        - matches
       summary: Get match by ID
+      operationId: getMatchById
       description: Returns the details of a single match identified by its ID.
 
       parameters:
@@ -913,7 +967,10 @@ paths:
 
   /matches/{id}/predict:
     post:
+      tags:
+        - matches
       summary: Create a prediction
+      operationId: createPrediction
       description: Creates a prediction for a specific match for the authenticated user.
 
       security:
@@ -1023,7 +1080,10 @@ paths:
 
   /users/me/predictions:
     get:
+      tags:
+        - predictions
       summary: Get authenticated user's predictions
+      operationId: getMyPredictions
       description: Returns all predictions created by the authenticated user.
 
       security:
@@ -1113,7 +1173,10 @@ paths:
 
   /users/{id}/predictions:
     get:
+      tags:
+        - predictions
       summary: Get user's predictions
+      operationId: getUserPredictions
       description: Returns all predictions created by a specific user.
 
       parameters:
@@ -1189,7 +1252,10 @@ paths:
 
   /leaderboard:
     get:
+      tags:
+        - leaderboard
       summary: Get leaderboard
+      operationId: getLeaderboard
       description: Returns the general leaderboard, optionally filtered by week and sorted by total points.
 
       parameters:
