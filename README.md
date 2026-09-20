@@ -136,6 +136,48 @@ The server will start on `http://localhost:3000`.
 
 ---
 
+## 🐳 Docker
+
+The project can also be run entirely with Docker, without installing Node.js or MySQL locally.
+
+**Requirements**
+
+- Docker
+- Docker Compose v2.22+ (needed for `--watch`)
+
+**1. Start the app**
+
+```bash
+docker compose up --build --watch
+```
+
+This builds the images and starts two containers in the foreground, with logs streamed in real time:
+
+- `db` — MySQL 8.0, automatically initialized with `database/migrations.sql` (schema + seed data)
+- `app` — the API, available at `http://localhost:3000`
+
+Watch mode is also enabled: `src/` and `tests/` are synced into the running `app` container, which restarts automatically on change. Changes to `package.json` trigger a full image rebuild. Stop it with `Ctrl+C`.
+
+Environment variables are read from your local `.env` file if present, otherwise safe development defaults are used. `DB_HOST`, `DB_PORT`, and `DB_USER` are always overridden by `docker-compose.yml` so the app connects to the `db` service inside the Docker network.
+
+**2. Run tests in the container**
+
+With the app running in the terminal above, open a new terminal and run:
+
+```bash
+docker compose exec app npm test
+```
+
+**3. Stop the containers**
+
+```bash
+docker compose down
+```
+
+Add `-v` to also remove the MySQL data volume and start with a clean database next time.
+
+---
+
 ## 🧪 Running Tests
 
 ```bash
