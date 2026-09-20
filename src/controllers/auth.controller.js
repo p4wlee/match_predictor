@@ -62,8 +62,10 @@ exports.login = async (req, res) => {
     // findByEmail restituisce undefined se l'utente non esiste
     const user = await userModel.findByEmail(email);
 
-    // se l'utente non esiste rispondo con 404
-    if (!user) return res.status(404).json({ message: `user not found` });
+    const unauthMessage = 'invalid email or password';
+    // if user not exists avoit to retrive 404,
+    // but instead return 401 so as not to provide information to someone with malicious intent
+    if (!user) return res.status(401).json({ message: unauthMessage });
 
     // confronto la password in chiaro con quella hashata nel database
     // bcrypt.compare restituisce true se corrispondono, false altrimenti
@@ -73,7 +75,7 @@ exports.login = async (req, res) => {
     // se la password non è valida rispondo con 401
     if (!isPasswordValid) {
       return res.status(401).json({
-        message: `unauthorized access`,
+        message: unauthMessage,
       });
     }
 
@@ -118,10 +120,11 @@ exports.refresh = async (req, res) => {
     // findByRefreshToken restituisce undefined se il token non esiste nel db
     const user = await userModel.findByRefreshToken(refreshToken);
 
-    // se nessun utente ha quel refresh token, il token non è valido
+    // if no user has that refresh token, the token is invalid
+    // do not provide information about this
     if (!user) {
       return res.status(401).json({
-        message: `user not found`,
+        message: `invalid token`,
       });
     }
 
